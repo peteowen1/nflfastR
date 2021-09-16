@@ -612,9 +612,13 @@ make_model_mutations <- function(pbp) {
       home = dplyr::if_else(.data$posteam == .data$home_team, 1, 0),
       model_roof = dplyr::if_else(is.na(.data$roof) | .data$roof == 'open' | .data$roof == 'closed', as.character('retractable'), as.character(.data$roof)),
       model_roof = as.factor(.data$model_roof),
+      model_surface = dplyr::if_else(.data$surface == "grass", as.character('grass'), as.character('turf')),
+      model_surface = as.factor(.data$model_surface),
       retractable = dplyr::if_else(.data$model_roof == 'retractable', 1, 0),
       dome = dplyr::if_else(.data$model_roof == 'dome', 1, 0),
-      outdoors = dplyr::if_else(.data$model_roof == 'outdoors', 1, 0)
+      outdoors = dplyr::if_else(.data$model_roof == 'outdoors', 1, 0),
+      grass = dplyr::if_else(.data$model_surface == 'grass', 1, 0),
+      turf = dplyr::if_else(.data$model_surface == 'turf', 1, 0)
     )
 
   return(pbp)
