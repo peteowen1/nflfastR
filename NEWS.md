@@ -1,12 +1,62 @@
 # nflfastR (development version)
 
-* Fixed a minor bug in the console output of `update_db()`
-* Add nflreadr to dependecies and drop lubridate and magrittr dependency
+* Internal change to `calculate_player_stats()` that reflects new nflverse data infrastructure.
+* `calculate_player_stats()` now unifies player names and joins the following player information via `nflreadr::load_players()`:
+  - `player_display_name` - Full name of the player
+  - `position` - Position of the player
+  - `position_group` - Position group of the player
+  - `headshot_url` - URL to a player headshot image
+* Added new function `calculate_player_stats_def()` that aggregates defensive player stats either at game level or overall. (#288) v4.4.0.9006
+* Make data work in 2022 (hopefully)
+* Fix Amon-Ra St. Brown breaking the name parser
+* import/export `nflverse_sitrep`
+* Add gsis_id patch to `clean_pbp()`. (v4.4.0.9009)
+* `calculate_player_stats_def()` failed in situations where play-by-play data is missing certain stats. (#382) (v4.4.0.9010)
+
+# nflfastR 4.4.0
+
+## New Functions, Options, Data
+
+* Added new function `calculate_standings()` that computes regular season division standings and playoff seeds from nflverse data.
+* The database function `update_db()` now supports the option "nflfastR.dbdirectory" which can be used to set the directory of the nflfastR pbp database globally and independent of any project structure or working directories.
+* The embedded data frame `?teams_colors_logos` has been updated to reflect the most recent team color themes and gained additional variables for conference and division as well as logo urls to the conference and league logos. (#290)
+* The embedded data frame `?teams_colors_logos` has been updated with the Washington Commanders. (#312)
+
+## Deprecation
+
+* The argument `qs` in the functions `load_pbp()` and `load_player_stats()` has been deprecated as of nflfastR 4.3.0. This release removes the argument entirely. 
+
+## Bugfixes and Minor Improvements
+
+* Fixed bug where a player could be duplicated in `calculate_player_stats()` in very rare cases caused by plays with laterals. (#289)
+* Fixed a bug where the function `add_xpass()` failed when called with an empty data frame. (#296)
+* Fixed a bug where `play_type` showed `no_play` on plays with penalties that don't result in a replay of the down. (#277, #281)
+* Fixed a bug in the variable descriptions of `total_home_score` and `total_away_score`. (#300)
+* `fast_scraper_rosters()` and `fast_scraper_schedules()` now call `nflreadr::load_rosters()` and `nflreadr::load_schedules()` under the hood (#304)
+* Fixed a bug causing missing EPA on game-ending turnovers in overtime
+* Bump minimum nflreadr version to 1.2.0 for data repository change
+* Fix a bug affecting yardline for a very small number of plays in the 2000 season (#323)
+* `update_db()` now uses a default play to predefine column types for all db drivers. (#324)
+* Fix a bug that resulted in incorrect `xyac_mean_yardage` on 4th downs (#327)
+* Fix a bug that resulted in missing `xyac` information for plays involving J.O'Shaughnessy (#329)
+* Fix a bug that resulted in missing `epa` on the last play of some games involving NE and BUF (#331)
+* `fast_scraper()` and `build_nflfastR_pbp()` now return data frames of class `nflverse_data` to be consistent with `nflreadr`.
+* Fix behavior of EP model in neutral site games (treats both teams as away teams)
+
+# nflfastR 4.3.0
+
+## Minor Changes
+
+* Add [nflreadr](https://nflreadr.nflverse.com/) to dependecies and drop lubridate and magrittr dependency
 * The functions `load_pbp()` and `load_player_stats()` now call `nflreadr::load_pbp()` and `nflreadr::load_player_stats()` respectively. Therefore the argument `qs` has been deprecated in both functions. It will be removed in a future release. Running `load_player_stats()` without any argument will now return player stats of the current season only (the default in `nflreadr`).
 * The deprecated arguments `source` and `pp` in the functions `fast_scraper_*()` and `build_nflfastR_pbp()` have been removed
 * Added the variables `racr` ("Receiver Air Conversion Ratio"), `target_share`, `air_yards_share`, `wopr` ("Weighted Opportunity Rating") and `pacr` ("Passing Air Conversion Ratio") to the output of `calculate_player_stats()`
-* Fix for a handful of missing `receiver` names (#270)
 * Added the function `report()` which will be used by the maintainers to help users debug their problems (#274).
+
+## Bug Fixes
+
+* Fixed a minor bug in the console output of `update_db()`
+* Fix for a handful of missing `receiver` names (#270)
 * Fixed bug with missing `return_team` on interception return touchdowns (#275)
 * Fixed a rare bug where an internal object wasn't predefined (#272)
 

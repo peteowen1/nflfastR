@@ -1,15 +1,21 @@
 url: https://www.nflfastr.com/
 
 template:
+  bootstrap: 5
+  bootswatch: yeti
+  bslib:
+    font_scale: 1.1
+    base_font: {google: "Roboto"}
+    heading_font: {google: "Kanit"}
   params:
-    bootswatch: yeti
     ganalytics: G-8FNRBBEHML
     docsearch:
       api_key: e3fe78f73c8f37b971f8119095349ecb
       index_name: nflfastr
   opengraph:
     image:
-      src: https://raw.githubusercontent.com/nflverse/nflfastR/master/man/figures/card.png
+      src: man/figures/card.png
+      alt: "nflfastR social preview card"
     twitter:
       site: "@nflfastR"
       card: summary_large_image
@@ -47,9 +53,11 @@ home:
     href: http://nflgamedata.com
 
 navbar:
+  type: dark
+  bg: dark
   structure:
     left:  [home, intro, reference, news, articles, tutorials]
-    right: [data, stats, games, twitter, discord, github]
+    right: [data, stats, games, twitter, discord, github, more]
   components:
     twitter:
       icon: "fab fa-twitter fa-lg"
@@ -80,20 +88,52 @@ navbar:
         href: https://www.opensourcefootball.com/posts/2020-09-28-nflfastr-ep-wp-and-cp-models/
       - text: Open Source Football
         href: https://www.opensourcefootball.com/
+    more:
+      text: "Packages & More"
+      menu:
+        - text: "nflverse Packages"
+        - text: nflfastR
+          href: https://www.nflfastr.com
+        - text: nflseedR
+          href: https://nflseedr.com
+        - text: nfl4th
+          href: https://www.nfl4th.com
+        - text: nflreadr
+          href: https://nflreadr.nflverse.com/
+        - text: nflplotR
+          href: https://nflplotr.nflverse.com/
+        - text: nflverse
+          href: https://nflverse.nflverse.com/
+        - text: "Open Source Football"
+          href: https://www.opensourcefootball.com
+        - text: "nflverse Data"
+        - text: nflverse GitHub
+          href: https://github.com/nflverse
+        - text: espnscrapeR Package
+          href: https://jthomasmock.github.io/espnscrapeR/
+        - text: ffverse
+        - text: "ffverse.com"
+          href: https://www.ffverse.com
 reference:
   - title: Main Functions
     contents:
       - build_nflfastR_pbp
-      - load_pbp
       - update_db
-      - fast_scraper_roster
-      - fast_scraper_schedules
+  - title: Load Functions
+    desc: >
+      These functions access precomputed data using the nflreadr package.
+      See <https://nflreadr.nflverse.com> for info and more data load functions.
+    contents:
+      - load_pbp
       - load_player_stats
   - title: Utility Functions
     contents:
       - calculate_expected_points
       - calculate_win_probability
       - calculate_player_stats
+      - calculate_player_stats_def
+      - calculate_standings
+      - report
   - title: Documentation
     contents:
       - nflfastR-package
@@ -111,3 +151,8 @@ reference:
       - add_xyac
       - clean_pbp
       - decode_player_ids
+  - title: Deprecated
+    desc: 'These functions are no longer recommended for use, see nflreadr for latest versions.'
+    contents:
+      - fast_scraper_roster
+      - fast_scraper_schedules
