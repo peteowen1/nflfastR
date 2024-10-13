@@ -18,6 +18,7 @@
 #' on [the nflfastR website](https://www.nflfastr.com/articles/nflfastR.html#example-11-replicating-official-stats)
 #' @examples
 #' \donttest{
+#' try({# to avoid CRAN test problems
 #'   pbp <- nflfastR::load_pbp(2020)
 #'
 #'   weekly <- calculate_player_stats_def(pbp, weekly = TRUE)
@@ -25,6 +26,7 @@
 #'
 #'   overall <- calculate_player_stats_def(pbp, weekly = FALSE)
 #'   dplyr::glimpse(overall)
+#' })
 #' }
 #'
 
@@ -79,6 +81,10 @@ calculate_player_stats_def <- function(pbp, weekly = FALSE) {
 
   })
 
+  stype <- data %>%
+    dplyr::select("season", "week", "season_type") %>%
+    dplyr::distinct()
+
   # Tackling stats -----------------------------------------------------------
 
   tackle_vars <- c(
@@ -111,6 +117,10 @@ calculate_player_stats_def <- function(pbp, weekly = FALSE) {
       values_from = .data$n,
       values_fill = 0L,
       values_fn = sum
+    ) %>%
+    add_column_if_missing(
+      "solo_tackle", "tackle_with_assist", "tackle_for_loss", "assist_tackle",
+      "forced_fumble_player"
     ) %>%
     dplyr::mutate(
       tackles = .data$solo_tackle + .data$tackle_with_assist
@@ -194,8 +204,9 @@ calculate_player_stats_def <- function(pbp, weekly = FALSE) {
       names_from = .data$desc,
       values_from = c(.data$n, .data$sack_yards),
       values_fn = sum,
-      values_fill = 0
+      values_fill = 0L
     ) %>%
+    add_column_if_missing("n_sack", "n_qb_hit", "sack_yards_sack") %>%
     dplyr::select(
       "season",
       "week",
@@ -241,7 +252,10 @@ calculate_player_stats_def <- function(pbp, weekly = FALSE) {
       names_from = "desc",
       values_from = c("n","return_yards"),
       values_fn = sum,
-      values_fill = 0
+      values_fill = 0L
+    ) %>%
+    add_column_if_missing(
+      "n_interception", "n_pass_defense", "return_yards_interception"
     ) %>%
     dplyr::select(
       "season",
@@ -303,7 +317,7 @@ calculate_player_stats_def <- function(pbp, weekly = FALSE) {
       names_from = .data$desc,
       values_from = .data$n,
       values_fn = sum,
-      values_fill = 0
+      values_fill = 0L
     ) %>%
     # Renaming fails if the columns don't exist. So we row bind a dummy tibble
     # including the relevant columns. The row will be filtered after renaming
@@ -332,10 +346,12 @@ calculate_player_stats_def <- function(pbp, weekly = FALSE) {
         .data$defteam == .data$fumble_recovery_2_team
     ) %>%
     dplyr::mutate(
+      # use data.table fifelse because base ifelse changed data type to logical
+      # if there are 0 rows
       fumble_recovery_1_player_id =
-        ifelse(.data$defteam != .data$fumbled_1_team, .data$fumble_recovery_1_player_id, NA),
+        data.table::fifelse(.data$defteam != .data$fumbled_1_team, .data$fumble_recovery_1_player_id, NA_character_),
       fumble_recovery_2_player_id =
-        ifelse(.data$defteam != .data$fumbled_2_team, .data$fumble_recovery_2_player_id, NA)
+        data.table::fifelse(.data$defteam != .data$fumbled_2_team, .data$fumble_recovery_2_player_id, NA_character_)
     ) %>%
     dplyr::select(
       "season", "week",
@@ -355,9 +371,10 @@ calculate_player_stats_def <- function(pbp, weekly = FALSE) {
       names_from = .data$desc,
       values_from = .data$n,
       values_fn = sum,
-      values_fill = 0
+      values_fill = 0L
     ) %>%
     dplyr::filter(!is.na(.data$player_id)) %>%
+    add_column_if_missing("fumble_recovery") %>%
     dplyr::rename("fumble_recovery_opp" = "fumble_recovery") %>%
     dplyr::group_by(.data$season, .data$week, .data$team, .data$player_id) %>%
     dplyr::summarise(
@@ -443,8 +460,9 @@ calculate_player_stats_def <- function(pbp, weekly = FALSE) {
       names_from = .data$desc,
       values_from = c(.data$n, .data$yards),
       values_fn = sum,
-      values_fill = 0
+      values_fill = 0L
     ) %>%
+    add_column_if_missing("n_penalty", "yards_penalty") %>%
     dplyr::select(
       "season", "week", "team", "player_id",
       "penalty" = "n_penalty",
@@ -498,11 +516,13 @@ calculate_player_stats_def <- function(pbp, weekly = FALSE) {
         ),
       by = "player_id"
     ) %>%
+    dplyr::left_join(stype, by = c("season", "week")) %>%
     dplyr::select(tidyselect::any_of(c(
 
       # game information
       "season",
       "week",
+      "season_type",
 
       # id information
       "player_id",
@@ -566,7 +586,7 @@ calculate_player_stats_def <- function(pbp, weekly = FALSE) {
         def_fumbles_forced = sum(.data$def_fumbles_forced),
         def_sacks = sum(.data$def_sacks),
         def_sack_yards = sum(.data$def_sack_yards),
-        def_qb_hit = sum(.data$def_qb_hits),
+        def_qb_hits = sum(.data$def_qb_hits),
         def_interceptions = sum(.data$def_interceptions),
         def_interception_yards = sum(.data$def_interception_yards),
         def_pass_defended = sum(.data$def_pass_defended),
@@ -580,8 +600,30 @@ calculate_player_stats_def <- function(pbp, weekly = FALSE) {
         def_penalty = sum(.data$def_penalty),
         def_penalty_yards = sum(.data$def_penalty_yards)
       ) %>%
-      dplyr::ungroup()
+      dplyr::ungroup() %>%
+      dplyr::select(
+        "player_id",
+        "player_name",
+        "player_display_name",
+        "games",
+        "position",
+        "position_group",
+        "headshot_url",
+        "team",
+        dplyr::everything()
+      )
   }
 
   player_df
 }
+
+# This function checks if the variables in ... exists as column
+# names in the argument .data. If not, it adds those columns and assigns
+# them the value in the argument value
+add_column_if_missing <- function(.data, ..., value = 0L){
+  dots <- rlang::list2(...)
+  new_cols <- dots[!dots %in% names(.data)]
+  .data[,unlist(new_cols)] <- value
+  .data
+}
+

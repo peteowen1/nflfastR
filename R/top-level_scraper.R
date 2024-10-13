@@ -16,6 +16,9 @@
 #'
 #' @param game_ids Vector of character ids or a data frame including the variable
 #' `game_id` (see details for further information).
+#' @param dir Path to local directory (defaults to option "nflfastR.raw_directory")
+#'   where nflfastR searches for raw game play-by-play data.
+#'   See [save_raw_pbp()] for additional information.
 #' @param ... Additional arguments passed to the scraping functions (for internal use)
 #' @param in_builder If \code{TRUE}, the final message will be suppressed (for usage inside of \code{\link{build_nflfastR_pbp}}).
 #' @details To load valid game_ids please use the package function
@@ -23,6 +26,7 @@
 #' output of that function)
 #' @seealso For information on parallel processing and progress updates please
 #' see [nflfastR].
+#' @seealso [build_nflfastR_pbp()], [save_raw_pbp()]
 #' @return Data frame where each individual row represents a single play for
 #' all passed game_ids containing the following
 #' detailed information (description partly extracted from nflscrapR):
@@ -384,14 +388,19 @@
 #' @examples
 #' \donttest{
 #' # Get pbp data for two games
+#' try({# to avoid CRAN test problems
 #' fast_scraper(c("2019_01_GB_CHI", "2013_21_SEA_DEN"))
+#' })
+#'
 #'
 #' # It is also possible to directly use the
 #' # output of `fast_scraper_schedules` as input
+#' try({# to avoid CRAN test problems
 #' library(dplyr, warn.conflicts = FALSE)
 #' fast_scraper_schedules(2020) %>%
 #'   slice_tail(n = 3) %>%
 #'   fast_scraper()
+#' })
 #'
 #' \dontshow{
 #' # Close open connections for R CMD Check
@@ -399,6 +408,7 @@
 #' }
 #' }
 fast_scraper <- function(game_ids,
+                         dir = getOption("nflfastR.raw_directory", default = NULL),
                          ...,
                          in_builder = FALSE) {
 
@@ -418,20 +428,20 @@ fast_scraper <- function(game_ids,
 
   suppressWarnings({
     p <- progressr::progressor(along = game_ids)
-    pbp <- furrr::future_map_dfr(game_ids, function(x, p, ...) {
+    pbp <- furrr::future_map_dfr(game_ids, function(x, p, dir, ...) {
       if (substr(x, 1, 4) < 2001) {
-        plays <- get_pbp_gc(x, ...)
+        plays <- please_work(get_pbp_gc)(x, dir = dir, ...)
       } else {
-        plays <- get_pbp_nfl(x, ...)
+        plays <- please_work(get_pbp_nfl)(x, dir = dir, ...)
       }
       p(sprintf("ID=%s", as.character(x)))
       return(plays)
-    }, p, ...)
+    }, p, dir = dir, ...)
 
     if (length(pbp) != 0) {
       user_message("Download finished. Adding variables...", "done")
       pbp <- pbp %>%
-        add_game_data() %>%
+        add_game_data(...) %>%
         add_nflscrapr_mutations() %>%
         add_ep() %>%
         add_air_yac_ep() %>%
@@ -463,7 +473,9 @@ fast_scraper <- function(game_ids,
 #' @examples
 #' \donttest{
 #' # Roster of the 2019 and 2020 seasons
+#' try({# to avoid CRAN test problems
 #' fast_scraper_roster(2019:2020)
+#' })
 #' }
 #' @export
 fast_scraper_roster <- function(...) nflreadr::load_rosters(...)
@@ -479,7 +491,9 @@ fast_scraper_roster <- function(...) nflreadr::load_rosters(...)
 #' @examples
 #'\donttest{
 #' # Get schedules for the whole 2015 - 2018 seasons
+#' try({# to avoid CRAN test problems
 #' fast_scraper_schedules(2015:2018)
+#' })
 #' }
 #' @export
 fast_scraper_schedules <- function(...) nflreadr::load_schedules(...)

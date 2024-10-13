@@ -1,9 +1,7 @@
 ## Release summary
 
 This is a minor release that 
-* fixes bugs
-* removes deprecated arguments
-* adds a new function 
+* adjusts the setup process of unit tests per request
 
 ## R CMD check results
 
@@ -11,7 +9,7 @@ This is a minor release that
 
 ## revdepcheck results
 
-We checked 2 reverse dependencies, comparing R CMD check results across CRAN and dev versions of this package.
+We checked 3 reverse dependencies, comparing R CMD check results across CRAN and dev versions of this package.
 
  * We saw 0 new problems
  * We failed to check 0 packages

@@ -1,17 +1,87 @@
 # nflfastR (development version)
 
+- Drop `{crayon}`, `{DT}`, `{httr}`, `{jsonlite}`, `{qs}` dependencies. (#453)
+- The function `calculate_player_stats_def` now returns `season_type` if argument `weekly` is set to `TRUE` for consistency with the other player stats functions. (#455)
+- The function `missing_raw_pbp()` now allows filtering by season. (#457)
+- More robust handling of player IDs in `decode_player_ids()`. (#458)
+- Fixed rare cases where the value of the `yrdln` variable didn't equal `"MID 50"` at midfield. (#459)
+- Fixed rare cases where `drive_start_yard_line` missed the blank space between team name and yard line number. (#459)
+- Fixed play description in some 1999 and 2000 games where the string "D.Holland" replaced the kick distance. (#459)
+- Fixed a problem where the `goal_to_go` variable was `FALSE` in actual goal to go situations. (#460)
+- Fixed a bug in `fixed_drive` and `fixed_drive_result` where the second weather delay in `2023_13_ARI_PIT` wasn't identified correctly. (#461)
+- `punter_player_id`, and `punter_player_name` are filled for blocked punt attempts. (#463)
+- Fixed an issue affecting scores of 2022 games involving a return touchdown (#466)
+- Added identification of scrambles from 1999 through 2004 with thank to Aaron Schatz (#468)
+- nflfastR tried to fix bugs in the underlying pbp data of JAX home games prior to the 2016 season. An update of the raw pbp data resolved those bugs so nflfastR needs to remove the hard coded adjustments. This means that nflfastR <= v4.6.1 will return incorrect pbp data for all Jacksonville home games prior to the 2016 season! (#478)
+- Fixed a problem where `clean_pbp()` returned `pass = 1` in actual rush plays in very rare cases. (#479)
+- Removed extra lines for injury timeouts that were breaking `fixed_drive` (#482)
+- The variable `penalty_type` now correctly lists the penalty "Kickoff Short of Landing Zone" introduced in the 2024 season. (#486)
+
+# nflfastR 4.6.1
+
+- The function `calculate_series_conversion_rates()` now correctly aggregates season level conversion rates. Performance has also been improved. (#440)
+- Adjusted test behavior at CRAN's request. 
+
+Thank you to
+[&#x0040;andrewtek](https://github.com/andrewtek), [&#x0040;gregalvi86](https://github.com/gregalvi86), [&#x0040;Ic4ru5Wing](https://github.com/Ic4ru5Wing), [&#x0040;JoeMarino2021](https://github.com/JoeMarino2021), [&#x0040;jreddy1990](https://github.com/jreddy1990), [&#x0040;marvin3FF](https://github.com/marvin3FF), [&#x0040;mrcaseb](https://github.com/mrcaseb), [&#x0040;RicShern](https://github.com/RicShern), [&#x0040;SPNE](https://github.com/SPNE), and [&#x0040;trivialfis](https://github.com/trivialfis) for their questions, feedback, and contributions towards this release.
+
+# nflfastR 4.6.0
+
+## New Features
+
+- nflfastR now fully supports loading raw pbp data from local file system. The best way to use this feature is to set `options("nflfastR.raw_directory" = {"your/local/directory"})`. Alternatively, both `build_nflfastR_pbp()` and `fast_scraper()` support the argument `dir` which defaults to the above option. (#423)
+- Added the new function `save_raw_pbp()` which efficiently downloads raw play-by-play data and saves it to the local file system. This serves as a helper to setup the system for faster play-by-play parsing via the above functionality. (#423)
+- Added the new function `missing_raw_pbp()` that computes a vector of game IDs missing in the local raw play-by-play directory. (#423)
+
+## Minor Improvements and Bugfixes
+
+- The internal function `get_pbp_nfl()` now uses `ifelse()` instead of `dplyr::if_else()` to handle some null-checking, fixes bug found in `2022_21_CIN_KC` match.
+- The function `calculate_player_stats()` now summarises target share and air yards share correctly when called with argument `weekly = FALSE` (#413)
+- The function `calculate_player_stats()` now returns the opponent team when called with argument `weekly = TRUE` (#414)
+- The function `calculate_player_stats_def()` no longer errors when small subsets of pbp data are missing stats. (#415)
+- The function `calculate_series_conversion_rates()` no longer returns `NA` values if a small subset of pbp data is missing series on offense or defense. (#417)
+- `fixed_drive` now correctly increments on plays where posteam lost a fumble but remains posteam because defteam also lost a fumble during the same play. (#419)
+- nflfastR now fixes missing drive number counts in raw pbp data in order to provide accurate drive information. (#420)
+- nflfastR now returns correct `kick_distance` on all punts and kickoffs. (#422)
+- Decode player IDs in 2023 pbp. (#425)
+- Drop the pseudo plays TV Timeout and Two-Minute Warning. (#426)
+- Fix posteam on kickoffs and PATs following a defensive TD in 2023+ pbp. (#427)
+- `calculate_player_stats()` no more counts lost fumbles on plays where a player fumbles, a team mate recovers and then loses a fumble to the defense. (#431)
+- The variables `passer`, `receiver`, and `rusher` no more return `NA` on "abnormal" plays - like direct snaps, aborted snaps, laterals etc. - that resulted in a penalty. (#435) 
+
+Thank you to
+[&#x0040;903124](https://github.com/903124), [&#x0040;ak47twq](https://github.com/ak47twq), [&#x0040;andrewtek](https://github.com/andrewtek), [&#x0040;darkhark](https://github.com/darkhark), [&#x0040;dennisbrookner](https://github.com/dennisbrookner), [&#x0040;marvin3FF](https://github.com/marvin3FF), [&#x0040;mistakia](https://github.com/mistakia), [&#x0040;mrcaseb](https://github.com/mrcaseb), [&#x0040;nicholasmendoza22](https://github.com/nicholasmendoza22), [&#x0040;rickstarblazer](https://github.com/rickstarblazer), [&#x0040;RileyJohnson22](https://github.com/RileyJohnson22), and [&#x0040;tanho63](https://github.com/tanho63) for their questions, feedback, and contributions towards this release.
+
+# nflfastR 4.5.1
+
+* New implementation of tests to be able to identify breaking changes in reverse dependencies (#396, #406)
+* `calculate_standings()` no more freezes when computing standings from schedules where some games are missing results, i.e. upcoming games.
+* Bug fix that caused problems with upcoming dplyr and tidyselect updates that weren't reverse compatible.
+* Significant performance improvements of internal functions. (#402)
+* Wrap examples in `try()` to avoid CRAN problems. (#404)
+* Fixed a bug where `calculate_standings()` wasn't able to handle nflverse pbp data. (#404)
+
+# nflfastR 4.5.0
+
+## New (experimental) functions
+* Added new function `calculate_player_stats_def()` that aggregates defensive player stats either at game level or overall. (#288)
+* The situation report `nflverse_sitrep` which is an alias of the already available `report()`
+* Added new function `calculate_player_stats_kicking()` that aggregates player stats for field goals and extra points at game level or overall. (#381)
+* Added new function `calculate_series_conversion_rates()` that computes series conversion and series result rates at a game level or season level. (#393)
+
+## Bugfixes and Minor Improvements
+
 * Internal change to `calculate_player_stats()` that reflects new nflverse data infrastructure.
 * `calculate_player_stats()` now unifies player names and joins the following player information via `nflreadr::load_players()`:
   - `player_display_name` - Full name of the player
   - `position` - Position of the player
   - `position_group` - Position group of the player
   - `headshot_url` - URL to a player headshot image
-* Added new function `calculate_player_stats_def()` that aggregates defensive player stats either at game level or overall. (#288) v4.4.0.9006
 * Make data work in 2022 (hopefully)
 * Fix Amon-Ra St. Brown breaking the name parser
-* import/export `nflverse_sitrep`
-* Add gsis_id patch to `clean_pbp()`. (v4.4.0.9009)
-* `calculate_player_stats_def()` failed in situations where play-by-play data is missing certain stats. (#382) (v4.4.0.9010)
+* Add gsis_id patch to `clean_pbp()`.
+* `calculate_player_stats_def()` failed in situations where play-by-play data is missing certain stats. (#382)
+* Spot-fixing `calculate_player_stats()` for `NA` names.
 
 # nflfastR 4.4.0
 

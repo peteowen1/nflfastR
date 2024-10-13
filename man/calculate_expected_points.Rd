@@ -37,7 +37,7 @@ must be present:
 \item{season}
 \item{home_team}
 \item{posteam}
-\item{roof (coded as 'outdoors', 'dome', or {'open' / 'closed' / NA} (retractable))}
+\item{roof (coded as 'outdoors', 'dome', or 'open'/'closed'/NA (retractable))}
 \item{half_seconds_remaining}
 \item{yardline_100}
 \item{down}
@@ -48,6 +48,7 @@ must be present:
 }
 \examples{
 \donttest{
+try({# to avoid CRAN test problems
 library(dplyr)
 data <- tibble::tibble(
 "season" = 1999:2019,
@@ -64,5 +65,6 @@ data <- tibble::tibble(
 
 nflfastR::calculate_expected_points(data) \%>\%
   dplyr::select(season, yardline_100, td_prob, ep)
+})
 }
 }

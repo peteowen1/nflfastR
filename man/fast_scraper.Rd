@@ -4,11 +4,20 @@
 \alias{fast_scraper}
 \title{Get NFL Play by Play Data}
 \usage{
-fast_scraper(game_ids, ..., in_builder = FALSE)
+fast_scraper(
+  game_ids,
+  dir = getOption("nflfastR.raw_directory", default = NULL),
+  ...,
+  in_builder = FALSE
+)
 }
 \arguments{
 \item{game_ids}{Vector of character ids or a data frame including the variable
 \code{game_id} (see details for further information).}
+
+\item{dir}{Path to local directory (defaults to option "nflfastR.raw_directory")
+where nflfastR searches for raw game play-by-play data.
+See \code{\link[=save_raw_pbp]{save_raw_pbp()}} for additional information.}
 
 \item{...}{Additional arguments passed to the scraping functions (for internal use)}
 
@@ -387,14 +396,19 @@ output of that function)
 \examples{
 \donttest{
 # Get pbp data for two games
+try({# to avoid CRAN test problems
 fast_scraper(c("2019_01_GB_CHI", "2013_21_SEA_DEN"))
+})
+
 
 # It is also possible to directly use the
 # output of `fast_scraper_schedules` as input
+try({# to avoid CRAN test problems
 library(dplyr, warn.conflicts = FALSE)
 fast_scraper_schedules(2020) \%>\%
   slice_tail(n = 3) \%>\%
   fast_scraper()
+})
 
 \dontshow{
 # Close open connections for R CMD Check
@@ -405,4 +419,6 @@ future::plan("sequential")
 \seealso{
 For information on parallel processing and progress updates please
 see \link{nflfastR}.
+
+\code{\link[=build_nflfastR_pbp]{build_nflfastR_pbp()}}, \code{\link[=save_raw_pbp]{save_raw_pbp()}}
 }

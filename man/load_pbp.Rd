@@ -24,8 +24,10 @@ Loads play by play seasons from the \href{https://github.com/nflverse/nflverse-d
 }
 \examples{
 \donttest{
+try({# to avoid CRAN test problems
 pbp <- load_pbp(2019:2020)
 dplyr::glimpse(pbp)
+})
 }
 }
 \seealso{
@@ -35,5 +37,5 @@ dplyr::glimpse(pbp)
 
 \url{https://www.nflfastr.com/reference/build_nflfastR_pbp.html} for the nflfastR function \code{nflfastR::build_nflfastR_pbp()}
 
-Issues with this data should be filed here: \url{https://github.com/nflverse/nflfastR-data}
+Issues with this data should be filed here: \url{https://github.com/nflverse/nflverse-pbp}
 }

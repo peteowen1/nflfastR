@@ -36,14 +36,18 @@
 #' @examples
 #' \donttest{
 #' # Build nflfastR pbp for the 2018 and 2019 Super Bowls
+#' try({# to avoid CRAN test problems
 #' build_nflfastR_pbp(c("2018_21_NE_LA", "2019_21_SF_KC"))
+#' })
 #'
 #' # It is also possible to directly use the
 #' # output of `fast_scraper_schedules` as input
+#' try({# to avoid CRAN test problems
 #' library(dplyr, warn.conflicts = FALSE)
 #' fast_scraper_schedules(2020) %>%
 #'   slice_tail(n = 3) %>%
 #'   build_nflfastR_pbp()
+#'  })
 #'
 #' \dontshow{
 #' # Close open connections for R CMD Check
@@ -51,16 +55,17 @@
 #' }
 #' }
 build_nflfastR_pbp <- function(game_ids,
+                               dir = getOption("nflfastR.raw_directory", default = NULL),
                                ...,
                                decode = TRUE,
                                rules = TRUE) {
 
   if (!is.vector(game_ids) && is.data.frame(game_ids)) game_ids <- game_ids$game_id
 
-  if (!is.vector(game_ids)) cli::cli_abort("Param {.code game_ids} is not a valid vector!")
+  if (!is.vector(game_ids)) cli::cli_abort("Param {.arg game_ids} is not a valid vector!")
 
   if (isTRUE(decode) && !is_installed("gsisdecoder")) {
-    cli::cli_abort("Package {.val gsisdecoder} required for decoding. Please install it with {.code install.packages(\"gsisdecoder\")}.")
+    cli::cli_abort("Package {.pkg gsisdecoder} required for decoding. Please install it with {.code install.packages(\"gsisdecoder\")}.")
   }
 
   if (isTRUE(rules)) rule_header("Build nflfastR Play-by-Play Data")
@@ -68,13 +73,9 @@ build_nflfastR_pbp <- function(game_ids,
   game_count <- ifelse(is.vector(game_ids), length(game_ids), nrow(game_ids))
   builder <- TRUE
 
-  if (game_count > 1) {
-    cli::cli_ul("{my_time()} | Start download of {game_count} games...")
-  } else {
-    cli::cli_ul("{my_time()} | Start download of {game_count} game...")
-  }
+  cli::cli_ul("{my_time()} | Start download of {game_count} game{?s}...")
 
-  ret <- fast_scraper(game_ids = game_ids, ..., in_builder = builder) %>%
+  ret <- fast_scraper(game_ids = game_ids, dir = dir, ..., in_builder = builder) %>%
     clean_pbp(in_builder = builder) %>%
     add_qb_epa(in_builder = builder) %>%
     add_xyac(in_builder = builder) %>%
